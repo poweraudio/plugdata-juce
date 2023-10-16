@@ -345,9 +345,53 @@ public:
     //==============================================================================
     bool isConstrainedNativeWindow() const
     {
+        //std::cout << "styleFlags: " << get_style_flags(styleFlags) << std::endl;
         return constrainer != nullptr
             && (styleFlags & (windowHasTitleBar | windowIsResizable)) == (windowHasTitleBar | windowIsResizable)
             && ! isKioskMode();
+    }
+
+    // ============ debugging styleflags ===========
+    juce::String get_style_flags(int styleFlag) const
+    {
+        std::map<int, juce::String> flag_descriptions = {
+            {1 << 0, "windowAppearsOnTaskbar"},
+            {1 << 1, "windowIsTemporary"},
+            {1 << 2, "windowIgnoresMouseClicks"},
+            {1 << 3, "windowHasTitleBar"},
+            {1 << 4, "windowIsResizable"},
+            {1 << 5, "windowHasMinimiseButton"},
+            {1 << 6, "windowHasMaximiseButton"},
+            {1 << 7, "windowHasCloseButton"},
+            {1 << 8, "windowHasDropShadow"},
+            {1 << 9, "windowRepaintedExplictly"},
+            {1 << 10, "windowIgnoresKeyPresses"},
+            {1 << 11, "windowRequiresSynchronousCoreGraphicsRendering"},
+            {1 << 30, "windowIsSemiTransparent"}};
+
+        juce::String description;
+
+        for (const auto &flag_pair : flag_descriptions)
+        {
+            int flag_value = flag_pair.first;
+            const juce::String &flag_name = flag_pair.second;
+
+            if (styleFlag & flag_value)
+            {
+                if (!description.isEmpty())
+                {
+                    description += ", ";
+                }
+                description += flag_name;
+            }
+        }
+
+        if (description.isEmpty())
+        {
+            return "No matching flags";
+        }
+
+        return description;
     }
 
     void updateWindowBounds()
@@ -604,6 +648,16 @@ private:
     double currentScaleFactor = 1.0;
     Array<Component*> glRepaintListeners;
     ScopedWindowAssociation association;
+
+    public:
+    // sync request counters
+    XID update_counter;
+    XID extended_update_counter;
+
+    bool newCounter = false;
+
+    long update_counter_value;
+    long ext_update_counter_value;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LinuxComponentPeer)

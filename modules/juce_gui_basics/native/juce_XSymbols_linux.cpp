@@ -183,6 +183,12 @@ bool X11Symbols::loadAllSymbols()
                        makeSymbolBinding (xStringListToTextProperty,   "XStringListToTextProperty"),
                        makeSymbolBinding (xSync,                       "XSync"),
                        makeSymbolBinding (xSynchronize,                "XSynchronize"),
+                       // _NET_WM_SYNC_REQUST stuff
+                       makeSymbolBinding (xSyncCreateCounter,          "XSyncCreateCounter"),
+                       makeSymbolBinding (xSyncIntToValue,             "XSyncIntToValue"),
+                       makeSymbolBinding (xSyncIntsToValue,            "XSyncIntsToValue"),
+                       makeSymbolBinding (xSyncSetCounter,             "XSyncSetCounter"),
+
                        makeSymbolBinding (xTranslateCoordinates,       "XTranslateCoordinates"),
                        makeSymbolBinding (xrmUniqueQuark,              "XrmUniqueQuark"),
                        makeSymbolBinding (xUngrabPointer,              "XUngrabPointer"),

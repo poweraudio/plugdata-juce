@@ -96,6 +96,8 @@ XWindowSystemUtilities::Atoms::Atoms (::Display* display)
     protocolList [TAKE_FOCUS]    = getIfExists (display, "WM_TAKE_FOCUS");
     protocolList [DELETE_WINDOW] = getIfExists (display, "WM_DELETE_WINDOW");
     protocolList [PING]          = getIfExists (display, "_NET_WM_PING");
+    protocolList [SYNC_REQUEST]  = getIfExists (display, "_NET_WM_SYNC_REQUEST");
+    xSyncCounter                 = getIfExists (display, "_NET_WM_SYNC_REQUEST_COUNTER");
     changeState                  = getIfExists (display, "WM_CHANGE_STATE");
     state                        = getIfExists (display, "WM_STATE");
     userTime                     = getCreating (display, "_NET_WM_USER_TIME");
@@ -1073,6 +1075,19 @@ public:
         else
        #endif
             X11Symbols::getInstance()->xPutImage (display, (::Drawable) window, gc, xImage.get(), sx, sy, dx, dy, dw, dh);
+
+        auto peer = static_cast<LinuxComponentPeer*>(getPeerFor(window));
+
+        if (!peer->newCounter) {
+            // counter hasn't been set, return
+            return;
+        }
+
+        peer->newCounter = false;
+
+        XSyncValue value;
+        X11Symbols::getInstance()->xSyncIntsToValue(&value, peer->update_counter_value, peer->ext_update_counter_value);
+        X11Symbols::getInstance()->xSyncSetCounter(display, peer->extended_update_counter, value);
     }
 
     #if JUCE_USE_XSHM
@@ -1595,8 +1610,20 @@ static int getAllEventsMask (bool ignoresMouseClicks)
     auto pid = (unsigned long) getpid();
     xchangeProperty (windowH, atoms.pid, XA_CARDINAL, 32, &pid, 1);
 
+    // register the counters for sync request
+    XSyncValue value;
+    XID counters[2];
+    X11Symbols::getInstance()->xSyncIntToValue(&value, 0);
+    peer->update_counter = X11Symbols::getInstance()->xSyncCreateCounter(display, value);
+    peer->extended_update_counter = X11Symbols::getInstance()->xSyncCreateCounter(display, value);
+
     // Set window manager protocols
     xchangeProperty (windowH, atoms.protocols, XA_ATOM, 32, atoms.protocolList, 2);
+
+    // reset the counters for sync request
+    counters[0] = peer->update_counter;
+    counters[1] = peer->extended_update_counter;
+    xchangeProperty (windowH, atoms.xSyncCounter, XA_CARDINAL, 32, (unsigned char*) &counters, 2);
 
     // Set drag and drop flags
     xchangeProperty (windowH, atoms.XdndTypeList, XA_ATOM, 32, atoms.allowedMimeTypes, numElementsInArray (atoms.allowedMimeTypes));
@@ -1888,7 +1915,6 @@ void XWindowSystem::updateConstraints (::Window windowH, ComponentPeer& peer) co
             hints->max_height = jmax (1, (int) (factor * c->getMaximumHeight()) - topAndBottom);
             hints->flags = PMinSize | PMaxSize;
         }
-
         X11Symbols::getInstance()->xSetWMNormalHints (display, windowH, hints.get());
     }
 }
@@ -2498,6 +2524,14 @@ bool XWindowSystem::isKeyCurrentlyDown (int keyCode) const
     auto keybit = (1 << (keycode & 7));
 
     return (Keys::keyStates [keybyte] & keybit) != 0;
+}
+
+void XWindowSystem::setSyncCounter(Display* display, XSyncCounter counter, int64 value)
+{
+    XSyncValue syncValue;
+
+    X11Symbols::getInstance()->xSyncIntsToValue(&syncValue, value & 0xFFFFFFFF, value >> 32);
+    X11Symbols::getInstance()->xSyncSetCounter(display, counter, syncValue);
 }
 
 ModifierKeys XWindowSystem::getNativeRealtimeModifiers() const
@@ -3874,6 +3908,13 @@ void XWindowSystem::handleClientMessageEvent (LinuxComponentPeer* peer, XClientM
         else if (atom == atoms.protocolList [XWindowSystemUtilities::Atoms::DELETE_WINDOW])
         {
             peer->handleUserClosingWindow();
+        }
+        else if (atom == atoms.protocolList [XWindowSystemUtilities::Atoms::SYNC_REQUEST])
+        {
+            peer->update_counter_value = clientMsg.data.l[2];
+            peer->ext_update_counter_value = clientMsg.data.l[3];
+            peer->newCounter = true;
+            //auto syncMode = clientMsg.data.l[4]; // TODO: check what mode the WM wants to report to us with
         }
     }
     else if (clientMsg.message_type == atoms.XdndEnter)

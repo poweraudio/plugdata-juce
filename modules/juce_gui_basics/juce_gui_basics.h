@@ -375,6 +375,9 @@ namespace juce
    #include <X11/Xcursor/Xcursor.h>
   #endif
 
+  // XSYNC stuff for _NET_WM_SYNC_REQUEST
+  #include <X11/extensions/sync.h>
+
   #undef SIZEOF
   #undef KeyPress
 
