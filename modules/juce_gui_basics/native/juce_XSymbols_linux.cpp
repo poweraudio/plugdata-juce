@@ -237,6 +237,16 @@ bool X11Symbols::loadAllSymbols()
                  makeSymbolBinding (xShmQueryVersion,            "XShmQueryVersion"));
    #endif
 
+   //============================ XI2 SYMBOLS ==================================
+
+    loadSymbols (xInput2,
+                 makeSymbolBinding (xGetEventData,               "XGetEventData"),
+                 makeSymbolBinding (xFreeEventData,              "XFreeEventData"),
+                 makeSymbolBinding (xiSelectEvents,              "XISelectEvents"),
+                 makeSymbolBinding (xiQueryDevice,               "XIQueryDevice"),
+                 makeSymbolBinding (xiFreeDeviceInfo,            "XIFreeDeviceInfo"),
+                 makeSymbolBinding (xiQueryVersion,              "XIQueryVersion"));
+
     return true;
 }
 

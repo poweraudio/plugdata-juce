@@ -262,6 +262,8 @@ private:
     XWindowSystem();
     ~XWindowSystem();
 
+    bool isHostResizing = false;
+
     //==============================================================================
     struct VisualAndDepth
     {
@@ -309,11 +311,11 @@ private:
     //==============================================================================
     void handleKeyPressEvent        (LinuxComponentPeer*, XKeyEvent&) const;
     void handleKeyReleaseEvent      (LinuxComponentPeer*, const XKeyEvent&) const;
-    void handleWheelEvent           (LinuxComponentPeer*, const XButtonPressedEvent&, float) const;
-    void handleButtonPressEvent     (LinuxComponentPeer*, const XButtonPressedEvent&, int) const;
-    void handleButtonPressEvent     (LinuxComponentPeer*, const XButtonPressedEvent&) const;
-    void handleButtonReleaseEvent   (LinuxComponentPeer*, const XButtonReleasedEvent&) const;
-    void handleMotionNotifyEvent    (LinuxComponentPeer*, const XPointerMovedEvent&) const;
+    void handleWheelEvent           (LinuxComponentPeer*, const XIDeviceEvent*, float) const;
+    void handleButtonPressEvent     (LinuxComponentPeer*, const XIDeviceEvent*, int) const;
+    void handleButtonPressEvent     (LinuxComponentPeer*, const XIDeviceEvent*) const;
+    void handleButtonReleaseEvent   (LinuxComponentPeer*, const XIDeviceEvent*) const;
+    void handleMotionNotifyEvent    (LinuxComponentPeer*, const XIDeviceEvent*) const;
     void handleEnterNotifyEvent     (LinuxComponentPeer*, const XEnterWindowEvent&) const;
     void handleLeaveNotifyEvent     (LinuxComponentPeer*, const XLeaveWindowEvent&) const;
     void handleFocusInEvent         (LinuxComponentPeer*) const;
@@ -332,6 +334,7 @@ private:
 
     ::Window findTopLevelWindowOf (::Window) const;
 
+    void xiMessageReceive (XEvent&);
     static void windowMessageReceive (XEvent&);
 
     //==============================================================================

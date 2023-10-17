@@ -606,6 +606,34 @@ public:
                                          Bool)
    #endif
 
+       //================================= XI2 SYMBOLS ==========================
+
+    JUCE_GENERATE_FUNCTION_WITH_DEFAULT (XGetEventData, xGetEventData,
+                                         (::Display*, XGenericEventCookie*),
+                                         bool)
+
+    JUCE_GENERATE_FUNCTION_WITH_DEFAULT (XFreeEventData, xFreeEventData,
+                                         (::Display*, XGenericEventCookie*),
+                                         void)
+
+    JUCE_GENERATE_FUNCTION_WITH_DEFAULT (XISelectEvents, xiSelectEvents,
+                                         (::Display*, ::Window, XIEventMask*, int),
+                                         int)
+
+    JUCE_GENERATE_FUNCTION_WITH_DEFAULT (XIQueryDevice, xiQueryDevice,
+                                         (::Display*, int, int*),
+                                         XIDeviceInfo*)
+
+    JUCE_GENERATE_FUNCTION_WITH_DEFAULT (XIFreeDeviceInfo, xiFreeDeviceInfo,
+                                         (XIDeviceInfo*),
+                                         void)
+
+    JUCE_GENERATE_FUNCTION_WITH_DEFAULT (XIQueryVersion, xiQueryVersion,
+                                         (::Display*, int*, int*),
+                                         int)
+
+   
+
     //==============================================================================
     JUCE_DECLARE_SINGLETON (X11Symbols, false)
 
@@ -632,6 +660,8 @@ private:
    #if JUCE_USE_XRANDR
     DynamicLibrary xrandrLib   { "libXrandr.so.2" };
    #endif
+
+   DynamicLibrary xInput2 { "libXi.so.6"};
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (X11Symbols)
