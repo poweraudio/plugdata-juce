@@ -3311,6 +3311,7 @@ bool XWindowSystem::initialiseXDisplay()
     initialisePointerMap();
     updateModifierMappings();
     initialiseXSettings();
+    initialiseXI2Devices();
 
    #if JUCE_USE_XSHM
     if (XSHMHelpers::isShmAvailable (display))
@@ -3356,6 +3357,35 @@ bool XWindowSystem::initialiseXDisplay()
                                         });
 
     return true;
+}
+
+void XWindowSystem::initialiseXI2Devices()
+{
+    mouseDevices.clear();
+
+    int dev_count = 0;
+    XIButtonClassInfo *buttonClassInfo;
+    XIDeviceInfo* info = X11Symbols::getInstance()->xiQueryDevice(display, XIAllDevices, &dev_count);
+
+    for (int i = 0; i < dev_count; i++) {
+        XIDeviceInfo* dev = &info[i];
+        if (!dev->enabled) {
+            continue;
+        }
+
+        if (!(dev->use == XISlavePointer || dev->use == XIFloatingSlave)) {
+            continue;
+        }
+
+        for (int j = 0; j < dev->num_classes; j++) {
+            buttonClassInfo = (XIButtonClassInfo*)(dev->classes[j]);
+
+            if (buttonClassInfo->type == XIButtonClass) {
+                mouseDevices.add(dev->deviceid);
+            }
+        }
+    }
+    X11Symbols::getInstance()->xiFreeDeviceInfo(info);
 }
 
 void XWindowSystem::destroyXDisplay()
@@ -4026,6 +4056,9 @@ void XWindowSystem::xiMessageReceive (XEvent& ev)
             XGenericEventCookie* xCookie = &ev.xcookie;
             XIDeviceEvent* event = reinterpret_cast<XIDeviceEvent*>(xCookie->data);
 
+            if (! mouseDevices.contains(event->deviceid))
+                    goto bypass;
+
             if (auto* peer = dynamic_cast<LinuxComponentPeer*>(getPeerFor(event->event))) {
                 switch (xCookie->evtype) {
                 case XI_ButtonPress:
@@ -4044,6 +4077,7 @@ void XWindowSystem::xiMessageReceive (XEvent& ev)
             }
         }
     }
+    bypass:
     X11Symbols::getInstance()->xFreeEventData(display, &ev.xcookie);
 }
 

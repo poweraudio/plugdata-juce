@@ -286,6 +286,8 @@ private:
     bool initialiseXDisplay();
     void destroyXDisplay();
 
+    void initialiseXI2Devices();
+
     //==============================================================================
     ::Window getFocusWindow (::Window) const;
 
@@ -336,6 +338,8 @@ private:
 
     void xiMessageReceive (XEvent&);
     static void windowMessageReceive (XEvent&);
+
+    Array<int> mouseDevices;
 
     //==============================================================================
     bool xIsAvailable = false;
