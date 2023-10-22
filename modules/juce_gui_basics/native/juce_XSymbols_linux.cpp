@@ -189,6 +189,8 @@ bool X11Symbols::loadAllSymbols()
                        makeSymbolBinding (xSyncIntsToValue,            "XSyncIntsToValue"),
                        makeSymbolBinding (xSyncSetCounter,             "XSyncSetCounter"),
 
+                       makeSymbolBinding (xIfEvent,                    "XIfEvent"),
+
                        makeSymbolBinding (xTranslateCoordinates,       "XTranslateCoordinates"),
                        makeSymbolBinding (xrmUniqueQuark,              "XrmUniqueQuark"),
                        makeSymbolBinding (xUngrabPointer,              "XUngrabPointer"),

@@ -1852,7 +1852,7 @@ void XWindowSystem::startHostManagedResize (::Window windowH,
 
     XWindowSystemUtilities::ScopedXLock xLock;
 
-    X11Symbols::getInstance()->xUngrabPointer (display, CurrentTime);
+    X11Symbols::getInstance()->xUngrabPointer (display, (::Time) getServerTime(windowH));
 
     const auto root = X11Symbols::getInstance()->xRootWindow (display, X11Symbols::getInstance()->xDefaultScreen (display));
 
@@ -1901,47 +1901,47 @@ void XWindowSystem::startHostManagedResize (::Window windowH,
                                            false,
                                            SubstructureRedirectMask | SubstructureNotifyMask,
                                            unalignedPointerCast<XEvent*> (&clientMsg));
+
+    usleep(16000); // FIXME: we shouldn't need to pause to give time for this event to register with the server
+    updateConstraints (windowH, true); // FIXME: in some situations (such as first click inside a screen recorder) this won't work, and the window will be able to be resized smaller than the constrainer!
 }
 
-void XWindowSystem::updateConstraints (::Window windowH) const
+void XWindowSystem::updateConstraints (::Window windowH, bool isHostManaged) const
 {
     if (auto* peer = getPeerFor (windowH))
-        updateConstraints (windowH, *peer);
+        updateConstraints (windowH, *peer, isHostManaged);
 }
 
-void XWindowSystem::updateConstraints (::Window windowH, ComponentPeer& peer) const
+void XWindowSystem::updateConstraints (::Window windowH, ComponentPeer& peer, bool isHostManaged) const
 {
     XWindowSystemUtilities::ScopedXLock xLock;
-
-    if (auto hints = makeXFreePtr (X11Symbols::getInstance()->xAllocSizeHints()))
+    XSizeHints hints;
+    // JUCE doesn't set windowIsResizable flag for non-native windows, but for X11 we can bypass this check when it's host managed resizing?
+    if (((peer.getStyleFlags() & ComponentPeer::windowIsResizable) == 0) && !isHostManaged)
     {
-        if ((peer.getStyleFlags() & ComponentPeer::windowIsResizable) == 0)
-        {
-            hints->min_width  = hints->max_width  = peer.getBounds().getWidth();
-            hints->min_height = hints->max_height = peer.getBounds().getHeight();
-            hints->flags = PMinSize | PMaxSize;
-        }
-        else if (auto* c = peer.getConstrainer())
-        {
-            const auto windowBorder = [&]() -> BorderSize<int>
-            {
-                if (const auto& frameSize = peer.getFrameSizeIfPresent())
-                    return *frameSize;
-
-                return {};
-            }();
-
-            const auto factor       = peer.getPlatformScaleFactor();
-            const auto leftAndRight = windowBorder.getLeftAndRight();
-            const auto topAndBottom = windowBorder.getTopAndBottom();
-            hints->min_width  = jmax (1, (int) (factor * c->getMinimumWidth())  - leftAndRight);
-            hints->max_width  = jmax (1, (int) (factor * c->getMaximumWidth())  - leftAndRight);
-            hints->min_height = jmax (1, (int) (factor * c->getMinimumHeight()) - topAndBottom);
-            hints->max_height = jmax (1, (int) (factor * c->getMaximumHeight()) - topAndBottom);
-            hints->flags = PMinSize | PMaxSize;
-        }
-        X11Symbols::getInstance()->xSetWMNormalHints (display, windowH, hints.get());
+        hints.min_width  = hints.max_width  = peer.getBounds().getWidth();
+        hints.min_height = hints.max_height = peer.getBounds().getHeight();
+        hints.flags = PMinSize | PMaxSize;
     }
+    else if (auto* c = peer.getConstrainer())
+    {
+        const auto windowBorder = [&]() -> BorderSize<int> {
+            if (const auto& frameSize = peer.getFrameSizeIfPresent())
+                return *frameSize;
+
+            return {};
+        }();
+
+        const auto factor       = peer.getPlatformScaleFactor();
+        const auto leftAndRight = windowBorder.getLeftAndRight();
+        const auto topAndBottom = windowBorder.getTopAndBottom();
+        hints.min_width  = jmax (1, (int) (factor * c->getMinimumWidth())  - leftAndRight);
+        hints.max_width  = jmax (1, (int) (factor * c->getMaximumWidth())  - leftAndRight);
+        hints.min_height = jmax (1, (int) (factor * c->getMinimumHeight()) - topAndBottom);
+        hints.max_height = jmax (1, (int) (factor * c->getMaximumHeight()) - topAndBottom);
+        hints.flags = PMinSize | PMaxSize;
+    }
+    X11Symbols::getInstance()->xSetWMNormalHints (display, windowH, &hints);
 }
 
 bool XWindowSystem::contains (::Window windowH, Point<int> localPos) const
@@ -2030,7 +2030,7 @@ void XWindowSystem::setMinimised (::Window windowH, bool shouldBeMinimised) cons
 
     if (shouldBeMinimised)
     {
-        auto root = X11Symbols::getInstance()->xRootWindow (display, X11Symbols::getInstance()->xDefaultScreen (display));
+        const auto root = X11Symbols::getInstance()->xRootWindow (display, X11Symbols::getInstance()->xDefaultScreen (display));
 
         XClientMessageEvent clientMsg;
         clientMsg.display = display;
@@ -2073,24 +2073,23 @@ void XWindowSystem::toFront (::Window windowH, bool) const
 {
     jassert (windowH != 0);
 
+    const auto root = X11Symbols::getInstance()->xRootWindow (display, X11Symbols::getInstance()->xDefaultScreen (display));
+
+    XClientMessageEvent xclient;
+    xclient.type = ClientMessage;
+    xclient.serial = 0;
+    xclient.send_event = True;
+    xclient.message_type = atoms.activeWin;
+    xclient.window = windowH;
+    xclient.format = 32;
+    xclient.data.l[0] = 1; // originally 2 (pager)? 1 is app
+    xclient.data.l[1] = getServerTime (windowH); // getUserTime always returns 0, lets see if getServerTime is better?
+    xclient.data.l[2] = 0;
+    xclient.data.l[3] = 0;
+    xclient.data.l[4] = 0;
+
     XWindowSystemUtilities::ScopedXLock xLock;
-    XEvent ev;
-    ev.xclient.type = ClientMessage;
-    ev.xclient.serial = 0;
-    ev.xclient.send_event = True;
-    ev.xclient.message_type = atoms.activeWin;
-    ev.xclient.window = windowH;
-    ev.xclient.format = 32;
-    ev.xclient.data.l[0] = 2;
-    ev.xclient.data.l[1] = getUserTime (windowH);
-    ev.xclient.data.l[2] = 0;
-    ev.xclient.data.l[3] = 0;
-    ev.xclient.data.l[4] = 0;
-
-    X11Symbols::getInstance()->xSendEvent (display, X11Symbols::getInstance()->xRootWindow (display, X11Symbols::getInstance()->xDefaultScreen (display)),
-                                           False, SubstructureRedirectMask | SubstructureNotifyMask, &ev);
-
-    X11Symbols::getInstance()->xSync (display, False);
+    X11Symbols::getInstance()->xSendEvent (display, root, False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent*) &xclient);
 }
 
 void XWindowSystem::toBehind (::Window windowH, ::Window otherWindow) const
@@ -2145,7 +2144,7 @@ bool XWindowSystem::grabFocus (::Window windowH) const
         && atts.map_state == IsViewable
         && ! isFocused (windowH))
     {
-        X11Symbols::getInstance()->xSetInputFocus (display, getFocusWindow (windowH), RevertToParent, (::Time) getUserTime (windowH));
+        X11Symbols::getInstance()->xSetInputFocus (display, getFocusWindow (windowH), RevertToParent, (::Time) getServerTime (windowH));
         return true;
     }
 
@@ -3193,6 +3192,23 @@ void XWindowSystem::updateModifierMappings() const
             }
         }
     }
+}
+
+long XWindowSystem::getServerTime (::Window windowH) const
+{
+    // get the xServer time by sending it a fake event, and getting the event back to read its timestamp
+    auto c = 'a';
+    auto timestamp_prop_atom = XWindowSystemUtilities::Atoms::getCreating(display, "com.plugdata.timestamp.prop");
+    xchangeProperty(windowH, timestamp_prop_atom, timestamp_prop_atom, 8, &c, 1);
+
+    XEvent ev;
+    X11Symbols::getInstance()->xIfEvent(display, &ev, [](::Display* display, XEvent* ev, XPointer arg) -> Bool {
+        return (ev->type == PropertyNotify &&
+                ev->xproperty.window == (::Window) arg &&
+                ev->xproperty.atom == XWindowSystemUtilities::Atoms::getCreating(display, "com.plugdata.timestamp.prop"));
+        }, (XPointer) windowH);
+    //std::cout << "time is: " << ev.xproperty.time << std::endl;
+    return ev.xproperty.time;
 }
 
 long XWindowSystem::getUserTime (::Window windowH) const

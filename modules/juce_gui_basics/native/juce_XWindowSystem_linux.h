@@ -180,7 +180,7 @@ public:
     void setIcon (::Window , const Image&) const;
     void setVisible (::Window, bool shouldBeVisible) const;
     void setBounds (::Window, Rectangle<int>, bool fullScreen) const;
-    void updateConstraints (::Window) const;
+    void updateConstraints (::Window, bool isHostManaged = false) const;
 
     ComponentPeer::OptionalBorderSize getBorderSize (::Window) const;
     Rectangle<int> getWindowBounds (::Window, ::Window parentWindow);
@@ -304,6 +304,7 @@ private:
     void deleteIconPixmaps (::Window) const;
     void updateModifierMappings() const;
 
+    long getServerTime (::Window) const;
     long getUserTime (::Window) const;
     bool isHidden (Window) const;
     bool isIconic (Window) const;
@@ -332,7 +333,7 @@ private:
 
     void dismissBlockingModals      (LinuxComponentPeer*) const;
     void dismissBlockingModals      (LinuxComponentPeer*, const XConfigureEvent&) const;
-    void updateConstraints          (::Window, ComponentPeer&) const;
+    void updateConstraints          (::Window, ComponentPeer&, bool isHostManaged = false) const;
 
     ::Window findTopLevelWindowOf (::Window) const;
 

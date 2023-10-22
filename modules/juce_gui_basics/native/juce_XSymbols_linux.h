@@ -485,6 +485,10 @@ public:
 
     // ==================================
 
+    JUCE_GENERATE_FUNCTION_WITH_DEFAULT (XIfEvent, xIfEvent,
+                                         (::Display*, XEvent*, int (*)(Display *,XEvent *,XPointer), XPointer),
+                                         Bool)
+
     JUCE_GENERATE_FUNCTION_WITH_DEFAULT (XTranslateCoordinates, xTranslateCoordinates,
                                          (::Display*, ::Window, ::Window, int, int, int*, int*, ::Window*),
                                          Bool)
