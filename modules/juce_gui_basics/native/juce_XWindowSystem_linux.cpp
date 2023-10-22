@@ -3706,7 +3706,7 @@ void XWindowSystem::handleButtonPressEvent (LinuxComponentPeer* peer, const XIDe
 
 void XWindowSystem::handleButtonPressEvent (LinuxComponentPeer* peer, const XIDeviceEvent* buttonPressEvent) const
 {
-    updateKeyModifiers ((int) buttonPressEvent->detail);
+    updateKeyModifiers ((int) buttonPressEvent->mods.effective);
 
     auto mapIndex = (uint32) (buttonPressEvent->detail - Button1);
 
@@ -3726,7 +3726,7 @@ void XWindowSystem::handleButtonPressEvent (LinuxComponentPeer* peer, const XIDe
 
 void XWindowSystem::handleButtonReleaseEvent (LinuxComponentPeer* peer, const XIDeviceEvent* buttonRelEvent) const
 {
-    updateKeyModifiers ((int) buttonRelEvent->detail);
+    updateKeyModifiers ((int) buttonRelEvent->mods.effective);
 
     if (peer->getParentWindow() != 0)
         peer->updateWindowBounds();
