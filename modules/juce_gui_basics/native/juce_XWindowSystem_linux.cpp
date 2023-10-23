@@ -1845,7 +1845,7 @@ void XWindowSystem::startHostManagedResize (::Window windowH,
 {
     const auto moveResize = XWindowSystemUtilities::Atoms::getIfExists (display, "_NET_WM_MOVERESIZE");
 
-    if (moveResize == None)
+    if (moveResize == None || std::getenv("WAYLAND_DISPLAY"))
         return;
 
     isHostResizing = true;
