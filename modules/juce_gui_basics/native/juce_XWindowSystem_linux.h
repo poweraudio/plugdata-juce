@@ -86,7 +86,7 @@ namespace XWindowSystemUtilities
 
         static constexpr unsigned long DndVersion = 3;
 
-        Atom protocols, protocolList[4], xSyncCounter, changeState, state, userTime, activeWin, pid, windowType, windowState, windowStateHidden,
+        Atom protocols, protocolList[4], xSyncCounter, changeState, state, activeWin, pid, windowType, windowState, windowStateHidden,
              XdndAware, XdndEnter, XdndLeave, XdndPosition, XdndStatus, XdndDrop, XdndFinished, XdndSelection,
              XdndTypeList, XdndActionList, XdndActionDescription, XdndActionCopy, XdndActionPrivate,
              XembedMsgType, XembedInfo, allowedActions[5], allowedMimeTypes[4], utf8String, clipboard, targets;
@@ -304,7 +304,6 @@ private:
     void deleteIconPixmaps (::Window) const;
     void updateModifierMappings() const;
 
-    long getServerTime (::Window) const;
     long getUserTime (::Window) const;
     bool isHidden (Window) const;
     bool isIconic (Window) const;

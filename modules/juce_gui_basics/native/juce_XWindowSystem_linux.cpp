@@ -100,7 +100,6 @@ XWindowSystemUtilities::Atoms::Atoms (::Display* display)
     xSyncCounter                 = getIfExists (display, "_NET_WM_SYNC_REQUEST_COUNTER");
     changeState                  = getIfExists (display, "WM_CHANGE_STATE");
     state                        = getIfExists (display, "WM_STATE");
-    userTime                     = getCreating (display, "_NET_WM_USER_TIME");
     activeWin                    = getCreating (display, "_NET_ACTIVE_WINDOW");
     pid                          = getCreating (display, "_NET_WM_PID");
     windowType                   = getIfExists (display, "_NET_WM_WINDOW_TYPE");
@@ -1852,7 +1851,7 @@ void XWindowSystem::startHostManagedResize (::Window windowH,
 
     XWindowSystemUtilities::ScopedXLock xLock;
 
-    X11Symbols::getInstance()->xUngrabPointer (display, (::Time) getServerTime(windowH));
+    X11Symbols::getInstance()->xUngrabPointer (display, (::Time) CurrentTime);
 
     const auto root = X11Symbols::getInstance()->xRootWindow (display, X11Symbols::getInstance()->xDefaultScreen (display));
 
@@ -2097,7 +2096,7 @@ void XWindowSystem::toFront (::Window windowH, bool) const
     xclient.window = windowH;
     xclient.format = 32;
     xclient.data.l[0] = 1; // originally 2 (pager)? 1 is app
-    xclient.data.l[1] = getServerTime (windowH); // getUserTime always returns 0, lets see if getServerTime is better?
+    xclient.data.l[1] = CurrentTime;
     xclient.data.l[2] = 0;
     xclient.data.l[3] = 0;
     xclient.data.l[4] = 0;
@@ -2158,7 +2157,7 @@ bool XWindowSystem::grabFocus (::Window windowH) const
         && atts.map_state == IsViewable
         && ! isFocused (windowH))
     {
-        X11Symbols::getInstance()->xSetInputFocus (display, getFocusWindow (windowH), RevertToParent, (::Time) getServerTime (windowH));
+        X11Symbols::getInstance()->xSetInputFocus (display, getFocusWindow (windowH), RevertToParent, (::Time)CurrentTime);
         return true;
     }
 
@@ -3206,38 +3205,6 @@ void XWindowSystem::updateModifierMappings() const
             }
         }
     }
-}
-
-long XWindowSystem::getServerTime (::Window windowH) const
-{
-    // get the xServer time by sending it a fake event, and getting the event back to read its timestamp
-    auto c = 'a';
-    auto timestamp_prop_atom = XWindowSystemUtilities::Atoms::getCreating(display, "com.plugdata.timestamp.prop");
-    xchangeProperty(windowH, timestamp_prop_atom, timestamp_prop_atom, 8, &c, 1);
-
-    XEvent ev;
-    X11Symbols::getInstance()->xIfEvent(display, &ev, [](::Display* display, XEvent* ev, XPointer arg) -> Bool {
-        return (ev->type == PropertyNotify &&
-                ev->xproperty.window == (::Window) arg &&
-                ev->xproperty.atom == XWindowSystemUtilities::Atoms::getCreating(display, "com.plugdata.timestamp.prop"));
-        }, (XPointer) windowH);
-    //std::cout << "time is: " << ev.xproperty.time << std::endl;
-    return ev.xproperty.time;
-}
-
-long XWindowSystem::getUserTime (::Window windowH) const
-{
-    jassert (windowH != 0);
-
-    XWindowSystemUtilities::GetXProperty prop (display, windowH, atoms.userTime, 0, 65536, false, XA_CARDINAL);
-
-    if (! prop.success)
-        return 0;
-
-    long result = 0;
-    std::memcpy (&result, prop.data, sizeof (long));
-
-    return result;
 }
 
 void XWindowSystem::initialiseXSettings()
