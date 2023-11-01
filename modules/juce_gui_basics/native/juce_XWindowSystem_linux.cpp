@@ -3740,7 +3740,7 @@ void XWindowSystem::handleMotionNotifyEvent (LinuxComponentPeer* peer, const XID
     if (isHostResizing)
         return;
 
-    updateKeyModifiers ((int) movedEvent->detail);
+    updateKeyModifiers ((int) movedEvent->mods.effective);
     Keys::refreshStaleMouseKeys();
 
     auto& dragState = dragAndDropStateMap[peer];
