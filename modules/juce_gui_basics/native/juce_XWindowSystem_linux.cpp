@@ -4053,8 +4053,15 @@ void XWindowSystem::xiMessageReceive (XEvent& ev)
             XGenericEventCookie* xCookie = &ev.xcookie;
             XIDeviceEvent* event = reinterpret_cast<XIDeviceEvent*>(xCookie->data);
 
+            // discard event if super key is held down
+            // super key + mouse down = WM move window
+            // super key + shift + mouse down = WM move window with snapping
+            if (event->mods.base & Mod4Mask)
+                goto bypass;
+
+            // discard event if it did not come from populated devices
             if (! mouseDevices.contains(event->deviceid))
-                    goto bypass;
+                goto bypass;
 
             if (auto* peer = dynamic_cast<LinuxComponentPeer*>(getPeerFor(event->event))) {
                 switch (xCookie->evtype) {
