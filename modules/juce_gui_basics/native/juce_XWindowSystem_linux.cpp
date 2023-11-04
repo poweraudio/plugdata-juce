@@ -1861,8 +1861,17 @@ void XWindowSystem::startHostManagedResize (::Window windowH,
     clientMsg.type = ClientMessage;
     clientMsg.format = 32;
     clientMsg.message_type = moveResize;
-    clientMsg.data.l[0] = mouseDown.getX();
-    clientMsg.data.l[1] = mouseDown.getY();
+
+    // _NET_WM_MOVERESIZE uses root coordinates, so translate the window mouse position to root
+    int rootX;
+    int rootY;
+    ::Window unusedChild;
+    auto scaleFactor = Desktop::getInstance().getGlobalScaleFactor();
+    auto posScaled = mouseDown * scaleFactor;
+    X11Symbols::getInstance()->xTranslateCoordinates(display, windowH, root, posScaled.getX(), posScaled.getY(), &rootX, &rootY, &unusedChild);
+    clientMsg.data.l[0] = rootX;
+    clientMsg.data.l[1] = rootY;
+
     clientMsg.data.l[2] = [&]
     {
         // It's unclear which header is supposed to contain these

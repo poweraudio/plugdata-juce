@@ -60,7 +60,7 @@ void ResizableCornerComponent::mouseDown (const MouseEvent& e)
 
     if (auto* peer = component->getPeer())
         if (&peer->getComponent() == component)
-            peer->startHostManagedResize (localPointToGlobal (e.getPosition()), zone);
+            peer->startHostManagedResize (e.getPosition(), zone);
 
     if (constrainer != nullptr)
         constrainer->resizeStart();
