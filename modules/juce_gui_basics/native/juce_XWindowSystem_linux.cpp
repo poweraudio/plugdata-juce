@@ -1940,7 +1940,7 @@ void XWindowSystem::updateConstraints (::Window windowH, ComponentPeer& peer, bo
             return {};
         }();
 
-        const auto factor       = peer.getPlatformScaleFactor();
+        const auto factor       = peer.getPlatformScaleFactor() * Desktop::getInstance().getGlobalScaleFactor();
         const auto leftAndRight = windowBorder.getLeftAndRight();
         const auto topAndBottom = windowBorder.getTopAndBottom();
         hints.min_width  = jmax (1, (int) (factor * c->getMinimumWidth())  - leftAndRight);
@@ -1948,20 +1948,6 @@ void XWindowSystem::updateConstraints (::Window windowH, ComponentPeer& peer, bo
         hints.min_height = jmax (1, (int) (factor * c->getMinimumHeight()) - topAndBottom);
         hints.max_height = jmax (1, (int) (factor * c->getMaximumHeight()) - topAndBottom);
         hints.flags = PMinSize | PMaxSize;
-
-        const auto aspectRatio = c->getFixedAspectRatio();
-
-        if (aspectRatio > 0.0)
-        {
-            const auto height = c->getMinimumHeight();
-            const auto aspectX = jmax (1, (int) (height * aspectRatio) - leftAndRight);
-            const auto aspectY = jmax (1, height - topAndBottom);
-            hints.min_aspect.x = aspectX;
-            hints.max_aspect.x = aspectX;
-            hints.min_aspect.y = aspectY;
-            hints.max_aspect.y = aspectY;
-            hints.flags |= PAspect;
-        }
     }
     X11Symbols::getInstance()->xSetWMNormalHints (display, windowH, &hints);
 }
