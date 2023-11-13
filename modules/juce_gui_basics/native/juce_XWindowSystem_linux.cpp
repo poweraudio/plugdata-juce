@@ -1075,7 +1075,7 @@ public:
        #endif
             X11Symbols::getInstance()->xPutImage (display, (::Drawable) window, gc, xImage.get(), sx, sy, dx, dy, dw, dh);
 
-        auto peer = static_cast<LinuxComponentPeer*>(getPeerFor(window));
+        auto* peer = static_cast<LinuxComponentPeer*>(getPeerFor(window));
 
         if (!peer->newCounter) {
             // counter hasn't been set, return
@@ -1866,7 +1866,9 @@ void XWindowSystem::startHostManagedResize (::Window windowH,
     int rootX;
     int rootY;
     ::Window unusedChild;
+    
     auto scaleFactor = Desktop::getInstance().getGlobalScaleFactor();
+    if(auto* peer = getPeerFor(windowH)) scaleFactor *= peer->getPlatformScaleFactor();
     auto posScaled = mouseDown * scaleFactor;
     X11Symbols::getInstance()->xTranslateCoordinates(display, windowH, root, posScaled.getX(), posScaled.getY(), &rootX, &rootY, &unusedChild);
     clientMsg.data.l[0] = rootX;
