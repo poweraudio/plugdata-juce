@@ -77,9 +77,12 @@ void ResizableEdgeComponent::mouseDown (const MouseEvent& e)
         return Zone::centre;
     }() };
 
+    auto position = e.getEventRelativeTo(component).getPosition();
+
     if (auto* peer = component->getPeer())
         if (&peer->getComponent() == component)
-            peer->startHostManagedResize (e.getPosition(), zone);
+            peer->startHostManagedResize(position, zone);
+
 
     if (constrainer != nullptr)
         constrainer->resizeStart();
