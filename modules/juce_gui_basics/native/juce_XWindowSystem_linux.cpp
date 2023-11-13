@@ -1084,9 +1084,8 @@ public:
 
         peer->newCounter = false;
 
-        XSyncValue value;
-        X11Symbols::getInstance()->xSyncIntsToValue(&value, peer->update_counter_value, peer->ext_update_counter_value);
-        X11Symbols::getInstance()->xSyncSetCounter(display, peer->extended_update_counter, value);
+       XWindowSystem::getInstance()->setSyncCounter(display, peer->extendedUpdateCounter, peer->updateCounterValue);
+       XWindowSystem::getInstance()->setSyncCounter(display, peer->updateCounter, peer->updateCounterValue);
     }
 
     #if JUCE_USE_XSHM
@@ -1613,15 +1612,15 @@ static int getAllEventsMask (bool ignoresMouseClicks)
     XSyncValue value;
     XID counters[2];
     X11Symbols::getInstance()->xSyncIntToValue(&value, 0);
-    peer->update_counter = X11Symbols::getInstance()->xSyncCreateCounter(display, value);
-    peer->extended_update_counter = X11Symbols::getInstance()->xSyncCreateCounter(display, value);
+    peer->updateCounter = X11Symbols::getInstance()->xSyncCreateCounter(display, value);
+    peer->extendedUpdateCounter = X11Symbols::getInstance()->xSyncCreateCounter(display, value);
 
     // Set window manager protocols
     xchangeProperty (windowH, atoms.protocols, XA_ATOM, 32, atoms.protocolList, 2);
 
     // reset the counters for sync request
-    counters[0] = peer->update_counter;
-    counters[1] = peer->extended_update_counter;
+    counters[0] = peer->updateCounter;
+    counters[1] = peer->extendedUpdateCounter;
     xchangeProperty (windowH, atoms.xSyncCounter, XA_CARDINAL, 32, (unsigned char*) &counters, 2);
 
     // Set drag and drop flags
@@ -3973,8 +3972,7 @@ void XWindowSystem::handleClientMessageEvent (LinuxComponentPeer* peer, XClientM
         }
         else if (atom == atoms.protocolList [XWindowSystemUtilities::Atoms::SYNC_REQUEST])
         {
-            peer->update_counter_value = clientMsg.data.l[2];
-            peer->ext_update_counter_value = clientMsg.data.l[3];
+            peer->updateCounterValue = clientMsg.data.l[2];
             peer->newCounter = true;
             //auto syncMode = clientMsg.data.l[4]; // TODO: check what mode the WM wants to report to us with
         }

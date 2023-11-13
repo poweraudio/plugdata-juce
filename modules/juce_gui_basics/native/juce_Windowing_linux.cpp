@@ -651,13 +651,12 @@ private:
 
     public:
     // sync request counters
-    XID update_counter;
-    XID extended_update_counter;
+    XID updateCounter;
+    XID extendedUpdateCounter;
 
     bool newCounter = false;
 
-    long update_counter_value;
-    long ext_update_counter_value;
+    long updateCounterValue;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LinuxComponentPeer)
