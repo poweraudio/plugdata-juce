@@ -86,7 +86,7 @@ namespace XWindowSystemUtilities
 
         static constexpr unsigned long DndVersion = 3;
 
-        Atom protocols, protocolList[4], xSyncCounter, changeState, state, activeWin, pid, windowType, windowState, windowStateHidden,
+        Atom protocols, protocolList[4], xSyncCounter, changeState, state, activeWin, pid, windowType, windowState, windowStateHidden, GTKFrameExtents,
              XdndAware, XdndEnter, XdndLeave, XdndPosition, XdndStatus, XdndDrop, XdndFinished, XdndSelection,
              XdndTypeList, XdndActionList, XdndActionDescription, XdndActionCopy, XdndActionPrivate,
              XembedMsgType, XembedInfo, allowedActions[5], allowedMimeTypes[4], utf8String, clipboard, targets;
@@ -287,6 +287,7 @@ private:
     void destroyXDisplay();
 
     void initialiseXI2Devices();
+    void setFrameExtents(::Window windowH, bool enabled) const;
 
     //==============================================================================
     ::Window getFocusWindow (::Window) const;

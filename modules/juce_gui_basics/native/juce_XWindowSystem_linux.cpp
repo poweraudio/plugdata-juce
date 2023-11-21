@@ -106,6 +106,8 @@ XWindowSystemUtilities::Atoms::Atoms (::Display* display)
     windowState                  = getIfExists (display, "_NET_WM_STATE");
     windowStateHidden            = getIfExists (display, "_NET_WM_STATE_HIDDEN");
 
+    GTKFrameExtents              = getIfExists (display, "_GTK_FRAME_EXTENTS");
+
     XdndAware                    = getCreating (display, "XdndAware");
     XdndEnter                    = getCreating (display, "XdndEnter");
     XdndLeave                    = getCreating (display, "XdndLeave");
@@ -1657,6 +1659,8 @@ static int getAllEventsMask (bool ignoresMouseClicks)
         X11Symbols::getInstance()->xiSelectEvents(display, windowH, &evmask, 1);
     //}
 
+    setFrameExtents(windowH, true);
+
     return windowH;
 }
 
@@ -1759,6 +1763,17 @@ void XWindowSystem::setIcon (::Window windowH, const Image& newIcon) const
     }
 
     X11Symbols::getInstance()->xSync (display, False);
+}
+
+void XWindowSystem::setFrameExtents(::Window windowH, bool enabled) const
+{
+    // set the frame extents to inset the frame when non-native window is used to allow snapping to the real window border
+    // this uses _GTK_FRAME_EXTENTS atom, which while named GTK, should be available in all major WM's due to Chrome using it
+    // more info: https://blogs.igalia.com/adunaev/2021/11/23/drop-shadows-on-linux-or-why-standards-are-good/
+
+    long margin = enabled ? 18 : 0;
+    long extents[4] = { margin, margin, margin, margin };
+    xchangeProperty(windowH, atoms.GTKFrameExtents, XA_CARDINAL, 32, (unsigned char*) extents, 4);
 }
 
 void XWindowSystem::setVisible (::Window windowH, bool shouldBeVisible) const
@@ -2061,6 +2076,8 @@ bool XWindowSystem::isMinimised (::Window w) const
 
 void XWindowSystem::setMaximised (::Window windowH, bool shouldBeMaximised) const
 {
+    setFrameExtents(windowH, !shouldBeMaximised);
+
     const auto root = X11Symbols::getInstance()->xRootWindow (display, X11Symbols::getInstance()->xDefaultScreen (display));
 
     XEvent ev;
