@@ -3374,7 +3374,7 @@ void XWindowSystem::initialiseXI2Devices()
             buttonClassInfo = (XIButtonClassInfo*)(dev->classes[j]);
 
             if (buttonClassInfo->type == XIButtonClass) {
-                mouseDevices.add(dev->deviceid);
+                mouseDevices.add(buttonClassInfo->sourceid);
             }
         }
     }
@@ -4055,7 +4055,7 @@ void XWindowSystem::xiMessageReceive (XEvent& ev)
                 goto bypass;
 
             // discard event if it did not come from populated devices
-            if (! mouseDevices.contains(event->deviceid))
+            if (! mouseDevices.contains(event->sourceid))
                 goto bypass;
 
             if (auto* peer = dynamic_cast<LinuxComponentPeer*>(getPeerFor(event->event))) {
