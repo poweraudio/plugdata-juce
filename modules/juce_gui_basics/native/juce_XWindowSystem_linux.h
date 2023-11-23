@@ -251,6 +251,8 @@ public:
     static String getWindowScalingFactorSettingName()  { return "Gdk/WindowScalingFactor"; }
     static String getThemeNameSettingName()            { return "Net/ThemeName"; }
 
+    void setFrameExtents(::Window windowH, bool enabled) const;
+
     //==============================================================================
     void handleWindowMessage (LinuxComponentPeer*, XEvent&) const;
     bool isParentWindowOf (::Window, ::Window possibleChild) const;
@@ -287,7 +289,6 @@ private:
     void destroyXDisplay();
 
     void initialiseXI2Devices();
-    void setFrameExtents(::Window windowH, bool enabled) const;
 
     //==============================================================================
     ::Window getFocusWindow (::Window) const;

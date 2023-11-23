@@ -83,6 +83,13 @@ public:
         return windowH;
     }
 
+    void handleScreenSizeChange() override
+    {
+        if (!isFullScreen()) {
+            XWindowSystem::getInstance()->setFrameExtents(windowH, true);
+        }
+    }
+
     //==============================================================================
     void* getNativeHandle() const override
     {

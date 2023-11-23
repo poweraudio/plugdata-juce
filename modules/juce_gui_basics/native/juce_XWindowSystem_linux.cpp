@@ -1771,7 +1771,10 @@ void XWindowSystem::setFrameExtents(::Window windowH, bool enabled) const
     // this uses _GTK_FRAME_EXTENTS atom, which while named GTK, should be available in all major WM's due to Chrome using it
     // more info: https://blogs.igalia.com/adunaev/2021/11/23/drop-shadows-on-linux-or-why-standards-are-good/
 
-    long margin = enabled ? 18 : 0;
+    // FIXME: we need to use the peer->getPlatformScaleFactor here, but platformScaleFactor is not updated correctly in Linux platform code
+    // we need to register scaleFactorListeners listeners in juce_Windowing_linux.cpp, but we don't yet
+
+    long margin = enabled ? std::ceil(18 * Desktop::getInstance().getGlobalScaleFactor()) : 0;
     long extents[4] = { margin, margin, margin, margin };
     xchangeProperty(windowH, atoms.GTKFrameExtents, XA_CARDINAL, 32, (unsigned char*) extents, 4);
 }
