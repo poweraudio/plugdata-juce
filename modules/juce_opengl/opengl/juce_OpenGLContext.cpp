@@ -423,7 +423,7 @@ public:
             }
         }
 
-        bufferSwapper.swap();
+        //bufferSwapper.swap();
         return RenderStatus::nominal;
     }
 
