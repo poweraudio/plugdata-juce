@@ -736,7 +736,9 @@ public:
         ~RenderThread()
         {
             flags.setDestructing();
+#if JUCE_LINUX
             thread.join();
+#endif
         }
 
         void add (CachedImage* x)
@@ -870,11 +872,14 @@ public:
         std::list<CachedImage*> images;
         Flags flags;
 
+#if JUCE_LINUX
         std::thread thread { [this]
         {
-            //Thread::setCurrentThreadName ("OpenGL Renderer");
-            //while (flags.waitForWork (renderAll() != RenderStatus::noWork)) {}
+
+            Thread::setCurrentThreadName ("OpenGL Helper");
+            while (flags.waitForWork (renderAll() != RenderStatus::noWork)) {}
         } };
+#endif
     };
 
     void refreshDisplayLinkConnection()
