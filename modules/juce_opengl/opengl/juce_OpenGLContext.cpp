@@ -872,8 +872,8 @@ public:
 
         std::thread thread { [this]
         {
-            Thread::setCurrentThreadName ("OpenGL Renderer");
-            while (flags.waitForWork (renderAll() != RenderStatus::noWork)) {}
+            //Thread::setCurrentThreadName ("OpenGL Renderer");
+            //while (flags.waitForWork (renderAll() != RenderStatus::noWork)) {}
         } };
     };
 
