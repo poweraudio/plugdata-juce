@@ -66,6 +66,7 @@ public:
     /** Destructor. */
     ~ResizableCornerComponent() override;
 
+    void setAllowHostManagedResize(bool shouldAllowHostManagedResize) { allowHostManagedResize = shouldAllowHostManagedResize; }
 
 protected:
     //==============================================================================
@@ -85,6 +86,7 @@ private:
     WeakReference<Component> component;
     ComponentBoundsConstrainer* constrainer;
     Rectangle<int> originalBounds;
+    bool allowHostManagedResize = true;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ResizableCornerComponent)
 };
