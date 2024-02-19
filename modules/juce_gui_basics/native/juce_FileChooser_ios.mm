@@ -175,9 +175,7 @@ private:
         {
             auto currentFileOrDirectory = owner.startingFile;
 
-            UIDocumentPickerMode pickerMode = currentFileOrDirectory.existsAsFile()
-                                                ? UIDocumentPickerModeExportToService
-                                                : UIDocumentPickerModeMoveToService;
+            UIDocumentPickerMode pickerMode = UIDocumentPickerModeExportToService;
 
             if (! currentFileOrDirectory.existsAsFile())
             {
