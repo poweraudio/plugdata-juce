@@ -2147,6 +2147,17 @@ bool TextEditor::keyPressed (const KeyPress& key)
                      && key != KeyPress ('a', ModifierKeys::commandModifier, 0))
         return false;
 
+    if(!getHighlightedRegion().isEmpty()) {
+        if (key.isKeyCode (KeyPress::leftKey))  {
+            setCaretPosition(getHighlightedRegion().getStart());
+            return true;
+        }
+        if (key.isKeyCode (KeyPress::rightKey)) {
+            setCaretPosition(getHighlightedRegion().getEnd());
+            return true;
+        }
+    }
+    
     if (! TextEditorKeyMapper<TextEditor>::invokeKeyFunction (*this, key))
     {
         if (key == KeyPress::returnKey)
