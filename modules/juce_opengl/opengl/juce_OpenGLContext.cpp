@@ -103,18 +103,10 @@ class OpenGLContext::CachedImage final : public CachedComponentImage
         double scale;
 
         auto tie() const { return std::tie (area, scale); }
-
-        auto operator== (const AreaAndScale& other) const { return tie() == other.tie(); }
-        auto operator!= (const AreaAndScale& other) const { return tie() != other.tie(); }
-    };
-
-    class LockedAreaAndScale
-    {
-    public:
+        
         auto get() const
         {
-            const ScopedLock lock (mutex);
-            return data;
+            return *this;
         }
 
         template <typename Fn>
@@ -122,17 +114,17 @@ class OpenGLContext::CachedImage final : public CachedComponentImage
         {
             const auto old = [&]
             {
-                const ScopedLock lock (mutex);
-                return std::exchange (data, d);
+                auto oldarea = std::exchange (area, d.area);
+                auto oldscale = std::exchange (scale, d.scale);
+                return (AreaAndScale){oldarea, oldscale};
             }();
 
             if (old != d)
                 ifDifferent();
         }
 
-    private:
-        CriticalSection mutex;
-        AreaAndScale data { {}, 1.0 };
+        auto operator== (const AreaAndScale& other) const { return tie() == other.tie(); }
+        auto operator!= (const AreaAndScale& other) const { return tie() != other.tie(); }
     };
 
 public:
@@ -495,49 +487,6 @@ public:
     }
 
     //==============================================================================
-    class BufferSwapper final : private AsyncUpdater
-    {
-    public:
-        explicit BufferSwapper (CachedImage& img)
-            : image (img) {}
-
-        ~BufferSwapper() override
-        {
-            cancelPendingUpdate();
-        }
-
-        void swap()
-        {
-            static const auto swapBuffersOnMainThread = []
-            {
-                const auto os = SystemStats::getOperatingSystemType();
-
-                if ((os & SystemStats::MacOSX) != 0)
-                    return (os != SystemStats::MacOSX && os < SystemStats::MacOSX_10_14);
-
-                return false;
-            }();
-
-            if (swapBuffersOnMainThread && ! MessageManager::getInstance()->isThisTheMessageThread())
-                triggerAsyncUpdate();
-            else
-                image.nativeContext->swapBuffers();
-        }
-
-    private:
-        void handleAsyncUpdate() override
-        {
-            ScopedContextActivator activator;
-            activator.activate (image.context);
-
-            NativeContext::Locker locker (*image.nativeContext);
-            image.nativeContext->swapBuffers();
-        }
-
-        CachedImage& image;
-    };
-
-    //==============================================================================
     friend class NativeContext;
     std::unique_ptr<NativeContext> nativeContext;
 
@@ -548,7 +497,7 @@ public:
     RectangleList<int> validArea;
     Rectangle<int> lastScreenBounds;
     AffineTransform transform;
-    LockedAreaAndScale areaAndScale;
+    AreaAndScale areaAndScale;
 
     StringArray associatedObjectNames;
     ReferenceCountedArray<ReferenceCountedObject> associatedObjects;
@@ -560,8 +509,6 @@ public:
     bool shadersAvailable = false;
    #endif
     bool textureNpotSupported = false;
-    std::chrono::steady_clock::time_point lastMMLockReleaseTime{};
-    BufferSwapper bufferSwapper { *this };
 
    #if JUCE_MAC
     NSView* getCurrentView() const
