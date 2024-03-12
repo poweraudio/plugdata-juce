@@ -251,26 +251,6 @@ public:
     int getSwapInterval() const;
 
     //==============================================================================
-    /** Execute a lambda, function or functor on the OpenGL thread with an active
-        context.
-
-        This method will attempt to execute functor on the OpenGL thread. If
-        blockUntilFinished is true then the method will block until the functor
-        has finished executing.
-
-        This function can only be called if the context is attached to a component.
-        Otherwise, this function will assert.
-
-        This function is useful when you need to execute house-keeping tasks such
-        as allocating, deallocating textures or framebuffers. As such, the functor
-        will execute without locking the message thread. Therefore, it is not
-        intended for any drawing commands or GUI code. Any GUI code should be
-        executed in the OpenGLRenderer::renderOpenGL callback instead.
-    */
-    template <typename T>
-    void executeOnGLThread (T&& functor, bool blockUntilFinished);
-
-    //==============================================================================
     /** Returns a scale factor that relates the context component's size to the number
         of physical pixels it covers on the screen.
 
@@ -381,15 +361,8 @@ private:
 
     //==============================================================================
     CachedImage* getCachedImage() const noexcept;
-    void execute (AsyncWorker::Ptr, bool);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLContext)
 };
-
-//==============================================================================
-#ifndef DOXYGEN
-template <typename FunctionType>
-void OpenGLContext::executeOnGLThread (FunctionType&& f, bool shouldBlock) { execute (new AsyncWorkerFunctor<FunctionType> (f), shouldBlock); }
-#endif
 
 } // namespace juce
