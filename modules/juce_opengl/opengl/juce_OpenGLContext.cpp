@@ -168,7 +168,7 @@ public:
     {
         // make sure everything has finished executing
         state |= StateFlags::pendingDestruction;
-
+        /*
         if (workQueue.size() > 0)
         {
             if (! renderThread->contains (this))
@@ -176,7 +176,7 @@ public:
 
             while (workQueue.size() != 0)
                 Thread::sleep (20);
-        }
+        } */
 
         pause();
     }
@@ -184,7 +184,7 @@ public:
     //==============================================================================
     void pause()
     {
-        renderThread->remove (this);
+        //renderThread->remove (this);
 
         if ((state.fetch_and (~StateFlags::initialised) & StateFlags::initialised) == 0)
             return;
@@ -198,12 +198,14 @@ public:
         associatedObjectNames.clear();
         associatedObjects.clear();
         cachedImageFrameBuffer.release();
+        
+        // TODO: fix this!
         nativeContext->shutdownOnRenderThread();
     }
 
     void resume()
     {
-        renderThread->add (this);
+        //renderThread->add (this);
     }
 
     //==============================================================================
@@ -247,7 +249,7 @@ public:
     void triggerRepaint()
     {
         state |= (StateFlags::pendingRender | StateFlags::paintComponents);
-        renderThread->triggerRepaint();
+        //renderThread->triggerRepaint();
     }
 
     //==============================================================================
@@ -364,8 +366,8 @@ public:
             // This avoids hogging the message thread when doing intensive rendering.
             std::this_thread::sleep_until (lastMMLockReleaseTime + std::chrono::milliseconds { 2 });
 
-            if (renderThread->isListChanging())
-                return RenderStatus::messageThreadAborted;
+            //if (renderThread->isListChanging())
+            //    return RenderStatus::messageThreadAborted;
 
             doWorkWhileWaitingForLock (contextActivator);
 
@@ -688,7 +690,7 @@ public:
     {
         while (const auto work = workQueue.removeAndReturn (0))
         {
-            if (renderThread->isListChanging() || ! contextActivator.activate (context))
+            if (! contextActivator.activate (context))
                 break;
 
             NativeContext::Locker locker (*nativeContext);
@@ -708,7 +710,7 @@ public:
                 OpenGLContext::AsyncWorker::Ptr worker (*blocker);
                 workQueue.add (worker);
 
-                renderThread->abortLock();
+                //renderThread->abortLock();
                 context.triggerRepaint();
 
                 blocker->block();
@@ -717,7 +719,7 @@ public:
             {
                 workQueue.add (std::move (workerToUse));
 
-                renderThread->abortLock();
+                //renderThread->abortLock();
                 context.triggerRepaint();
             }
         }
@@ -741,7 +743,6 @@ public:
         ~RenderThread()
         {
             flags.setDestructing();
-            thread.join();
         }
 
         void add (CachedImage* x)
@@ -789,7 +790,7 @@ public:
                 listMutex.unlock();
                 const ScopeGuard scope { [&] { listMutex.lock(); } };
 
-                const auto status = x->renderFrame (messageManagerLock);
+                const auto status = RenderStatus::noWork; //x->renderFrame (messageManagerLock);
 
                 switch (status)
                 {
@@ -874,12 +875,6 @@ public:
         std::mutex listMutex, callbackMutex;
         std::list<CachedImage*> images;
         Flags flags;
-
-        std::thread thread { [this]
-        {
-            Thread::setCurrentThreadName ("OpenGL Renderer");
-            while (flags.waitForWork (renderAll() != RenderStatus::noWork)) {}
-        } };
     };
 
     void refreshDisplayLinkConnection()
@@ -952,8 +947,6 @@ public:
 
     OpenGLContext& context;
     Component& component;
-
-    SharedResourcePointer<RenderThread> renderThread;
 
     OpenGLFrameBuffer cachedImageFrameBuffer;
     RectangleList<int> validArea;
@@ -1178,7 +1171,7 @@ private:
                                                 context.openGLPixelFormat,
                                                 context.contextToShareWith);
         comp.setCachedComponentImage (newCachedImage);
-
+        newCachedImage->initialiseOnThread();
         start();
     }
 
