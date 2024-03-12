@@ -181,8 +181,6 @@ public:
     */
     void setContinuousRepainting (bool shouldContinuouslyRepaint) noexcept;
 
-    /** Asynchronously causes a repaint to be made. */
-    void triggerRepaint();
 
     //==============================================================================
     /** This retrieves an object that was previously stored with setAssociatedObject().

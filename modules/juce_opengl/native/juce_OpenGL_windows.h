@@ -140,12 +140,6 @@ public:
     void* getRawContext() const noexcept            { return renderContext.get(); }
     unsigned int getFrameBufferID() const noexcept  { return 0; }
 
-    void triggerRepaint()
-    {
-        if (context != nullptr)
-            context->triggerRepaint();
-    }
-
     struct Locker
     {
         explicit Locker (NativeContext& ctx) : lock (ctx.mutex) {}
