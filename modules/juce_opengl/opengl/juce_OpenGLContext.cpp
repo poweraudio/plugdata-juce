@@ -112,15 +112,11 @@ class OpenGLContext::CachedImage final : public CachedComponentImage
         template <typename Fn>
         void set (const AreaAndScale& d, Fn&& ifDifferent)
         {
-            const auto old = [&]
-            {
-                auto oldarea = std::exchange (area, d.area);
-                auto oldscale = std::exchange (scale, d.scale);
-                return (AreaAndScale){oldarea, oldscale};
-            }();
-
-            if (old != d)
+            if (d.area != area || d.scale != scale) {
+                area = d.area;
+                scale = d.scale;
                 ifDifferent();
+            }
         }
 
         auto operator== (const AreaAndScale& other) const { return tie() == other.tie(); }
