@@ -253,7 +253,7 @@ private:
         DummyComponent (NativeContext& c) : context (c) {}
 
         // The windowing code will call this when a paint callback happens
-        void handleCommandMessage (int) override   {}
+        void handleCommandMessage (int) override   { /*context.triggerRepaint();*/ }
 
         NativeContext& context;
     };

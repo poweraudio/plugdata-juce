@@ -85,8 +85,8 @@ private:
 
         void handleCommandMessage (int commandId) override
         {
-            if (commandId == 0)
-                native.triggerRepaint();
+            //if (commandId == 0)
+            //    native.triggerRepaint();
         }
 
         OpenGLContext::NativeContext& native;
@@ -385,8 +385,8 @@ public:
 
     void triggerRepaint()
     {
-        if (context != nullptr)
-            context->triggerRepaint();
+        //if (context != nullptr)
+        //    context->triggerRepaint();
     }
 
     struct Locker
