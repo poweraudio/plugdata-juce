@@ -898,6 +898,12 @@ void OpenGLContext::swapBuffers()
         nativeContext->swapBuffers();
 }
 
+double OpenGLContext::getRenderingScale() const noexcept
+{
+    return getCachedImage()->areaAndScale.scale;
+}
+
+
 unsigned int OpenGLContext::getFrameBufferID() const noexcept
 {
     return nativeContext != nullptr ? nativeContext->getFrameBufferID() : 0;

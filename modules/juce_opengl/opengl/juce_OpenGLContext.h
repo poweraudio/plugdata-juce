@@ -259,7 +259,7 @@ public:
         Note that this should only be called during an OpenGLRenderer::renderOpenGL()
         callback - at other times the value it returns is undefined.
     */
-    double getRenderingScale() const noexcept   { return currentRenderScale; }
+    double getRenderingScale() const noexcept;
 
     //==============================================================================
     /** If this context is backed by a frame buffer, this returns its ID number,
