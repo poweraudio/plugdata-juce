@@ -120,8 +120,7 @@ void TooltipWindow::displayTipInternal (Point<int> screenPos, const String& tip,
             const auto scaledPos = detail::ScalingHelpers::unscaledScreenPosToScaled (*this, physicalPos);
             updatePosition (tip, scaledPos, Desktop::getInstance().getDisplays().getDisplayForPoint (screenPos)->userArea);
 
-            addToDesktop (ComponentPeer::windowHasDropShadow
-                          | ComponentPeer::windowIsTemporary
+            addToDesktop (ComponentPeer::windowIsTemporary
                           | ComponentPeer::windowIgnoresKeyPresses
                           | ComponentPeer::windowIgnoresMouseClicks);
         }
