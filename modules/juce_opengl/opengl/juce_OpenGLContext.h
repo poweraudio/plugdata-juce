@@ -87,6 +87,10 @@ public:
         return false until the component is made visible.
     */
     bool isAttached() const noexcept;
+    
+    /** Perform thread-specific initialisation for openGL
+     **/
+    void initialiseOnThread();
 
     /** Returns the component to which this context is currently attached, or nullptr. */
     Component* getTargetComponent() const noexcept;
@@ -126,7 +130,7 @@ public:
         If enabling this, you must call this method before attachTo().
     */
     void setMultisamplingEnabled (bool) noexcept;
-
+    
     /** Returns true if shaders can be used in this context. */
     bool areShadersAvailable() const;
 

@@ -469,6 +469,7 @@ public:
        #endif
 
         textureNpotSupported = contextHasTextureNpotFeature();
+        isInitialised = true;
 
         if (context.renderer != nullptr)
             context.renderer->newOpenGLContextCreated();
@@ -505,6 +506,7 @@ public:
     bool shadersAvailable = false;
    #endif
     bool textureNpotSupported = false;
+    bool isInitialised = false;
 
    #if JUCE_MAC
     NSView* getCurrentView() const
@@ -709,7 +711,6 @@ private:
                                                 context.openGLPixelFormat,
                                                 context.contextToShareWith);
         comp.setCachedComponentImage (newCachedImage);
-        newCachedImage->initialiseOnThread();
         start();
     }
 
@@ -936,6 +937,15 @@ OpenGLContext::CachedImage* OpenGLContext::getCachedImage() const noexcept
         return CachedImage::get (*comp);
 
     return nullptr;
+}
+
+
+void OpenGLContext::initialiseOnThread()
+{
+    auto* c = getCachedImage();
+    if(c && !c->isInitialised) {
+        c->initialiseOnThread();
+    }
 }
 
 bool OpenGLContext::areShadersAvailable() const
