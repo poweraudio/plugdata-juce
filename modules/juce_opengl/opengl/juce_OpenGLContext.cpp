@@ -945,6 +945,7 @@ void OpenGLContext::initialiseOnThread()
     auto* c = getCachedImage();
     if(c && !c->isInitialised) {
         c->initialiseOnThread();
+        setSwapInterval(0);
     }
 }
 
