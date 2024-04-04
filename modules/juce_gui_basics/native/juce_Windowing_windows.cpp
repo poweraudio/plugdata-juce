@@ -1491,7 +1491,7 @@ private:
     {
         while (! threadShouldExit())
         {
-            if (output->WaitForVBlank() == S_OK && !isInsideCallback)
+            if (!isInsideCallback && output->WaitForVBlank() == S_OK)
                 triggerAsyncUpdate();
             else
                 Thread::sleep (1);
