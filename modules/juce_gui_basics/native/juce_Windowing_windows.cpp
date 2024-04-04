@@ -1491,7 +1491,7 @@ private:
     {
         while (! threadShouldExit())
         {
-            if (output->WaitForVBlank() == S_OK)
+            if (output->WaitForVBlank() == S_OK && !isInsideCallback)
                 triggerAsyncUpdate();
             else
                 Thread::sleep (1);
@@ -1500,14 +1500,17 @@ private:
 
     void handleAsyncUpdate() override
     {
+        isInsideCallback = true;
         for (auto& listener : listeners)
             listener.get().onVBlank();
+        isInsideCallback = false;
     }
 
     //==============================================================================
     ComSmartPtr<IDXGIOutput> output;
     HMONITOR monitor = nullptr;
     std::vector<std::reference_wrapper<VBlankListener>> listeners;
+    std::atomic<bool> isInsideCallback = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VSyncThread)
     JUCE_DECLARE_NON_MOVEABLE (VSyncThread)
