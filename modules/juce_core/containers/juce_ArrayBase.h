@@ -123,7 +123,7 @@ public:
         auto* e = begin();
 
         for (auto& o : other)
-            if (! exactlyEqual (*e++, o))
+            if (! exactlyEqual<const ElementType&>(*e++, o))
                 return false;
 
         return true;
