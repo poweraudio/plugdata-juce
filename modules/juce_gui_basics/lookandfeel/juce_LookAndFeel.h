@@ -266,7 +266,7 @@ private:
         bool operator== (const ColourSetting& other) const noexcept  { return colourID == other.colourID; }
     };
 
-    SortedSet<ColourSetting> colours;
+    std::unordered_map<int, Colour> colours;
     String defaultSans, defaultSerif, defaultFixed;
     Typeface::Ptr defaultTypeface;
     bool useNativeAlertWindows = false;
