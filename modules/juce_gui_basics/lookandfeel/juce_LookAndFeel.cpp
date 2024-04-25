@@ -76,7 +76,9 @@ LookAndFeel::~LookAndFeel()
 //==============================================================================
 Colour LookAndFeel::findColour (int colourID) const noexcept
 {
-    if(colours.contains(colourID))
+    
+    auto iter = colours.find(keyToFind);
+    if (iter != colours.end()) {
     {
         return colours.at(colourID);
     }
