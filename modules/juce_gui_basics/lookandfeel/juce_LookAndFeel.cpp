@@ -94,7 +94,8 @@ void LookAndFeel::setColour (int colourID, Colour newColour) noexcept
 
 bool LookAndFeel::isColourSpecified (const int colourID) const noexcept
 {
-    return colours.contains (colourID);
+    auto iter = colours.find(keyToFind);
+    return iter != colours.end();
 }
 
 //==============================================================================
