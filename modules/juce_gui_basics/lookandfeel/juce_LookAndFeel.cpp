@@ -77,7 +77,7 @@ LookAndFeel::~LookAndFeel()
 Colour LookAndFeel::findColour (int colourID) const noexcept
 {
     
-    auto iter = colours.find(keyToFind);
+    auto iter = colours.find(colourID);
     if (iter != colours.end()) {
     {
         return colours.at(colourID);
@@ -94,7 +94,7 @@ void LookAndFeel::setColour (int colourID, Colour newColour) noexcept
 
 bool LookAndFeel::isColourSpecified (const int colourID) const noexcept
 {
-    auto iter = colours.find(keyToFind);
+    auto iter = colours.find(colourID);
     return iter != colours.end();
 }
 
