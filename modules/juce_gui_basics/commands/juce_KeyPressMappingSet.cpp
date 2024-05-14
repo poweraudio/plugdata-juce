@@ -333,7 +333,7 @@ bool KeyPressMappingSet::keyPressed (const KeyPress& key, Component* const origi
                             invokeCommand (cm.commandID, key, true, 0, originatingComponent);
                             return true;
                         }
-
+ 
                         commandWasDisabled = (info.flags & ApplicationCommandInfo::dontTriggerAlertSound) == 0;
                     }
                 }

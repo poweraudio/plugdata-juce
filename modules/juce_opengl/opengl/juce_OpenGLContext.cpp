@@ -460,7 +460,7 @@ public:
         const auto currentViewportArea = areaAndScale.get().area;
         glViewport (0, 0, currentViewportArea.getWidth(), currentViewportArea.getHeight());
 
-        nativeContext->setSwapInterval (1);
+        nativeContext->setSwapInterval (0);
 
        #if ! JUCE_OPENGL_ES
         JUCE_CHECK_OPENGL_ERROR
@@ -945,7 +945,6 @@ void OpenGLContext::initialiseOnThread()
     auto* c = getCachedImage();
     if(c && !c->isInitialised) {
         c->initialiseOnThread();
-        setSwapInterval(0);
     }
 }
 
