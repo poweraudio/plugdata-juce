@@ -130,7 +130,7 @@ public:
         void clearPointer() noexcept                { owner = nullptr; }
 
     private:
-        ObjectType* owner;
+        std::atomic<ObjectType*> owner;
 
         JUCE_DECLARE_NON_COPYABLE (SharedPointer)
     };

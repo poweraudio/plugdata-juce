@@ -334,13 +334,13 @@ bool KeyPressMappingSet::keyPressed (const KeyPress& key, Component* const origi
                             return true;
                         }
 
-                        commandWasDisabled = true;
+                        commandWasDisabled = info.flags & ApplicationCommandInfo::dontTriggerAlertSound != 0;
                     }
                 }
             }
         }
     }
-
+    
     if (originatingComponent != nullptr && commandWasDisabled)
         originatingComponent->getLookAndFeel().playAlertSound();
 
