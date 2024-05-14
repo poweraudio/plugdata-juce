@@ -334,7 +334,7 @@ bool KeyPressMappingSet::keyPressed (const KeyPress& key, Component* const origi
                             return true;
                         }
 
-                        commandWasDisabled = info.flags & ApplicationCommandInfo::dontTriggerAlertSound != 0;
+                        commandWasDisabled = (info.flags & ApplicationCommandInfo::dontTriggerAlertSound) != 0;
                     }
                 }
             }
