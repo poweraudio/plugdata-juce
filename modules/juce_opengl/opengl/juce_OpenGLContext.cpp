@@ -175,6 +175,21 @@ public:
 
     void releaseResources() override
     {
+        state |= StateFlags::pendingDestruction;
+        
+        if ((state.fetch_and (~StateFlags::initialised) & StateFlags::initialised) == 0)
+                    return;
+
+        ScopedContextActivator activator;
+        activator.activate (context);
+
+        if (context.renderer != nullptr)
+            context.renderer->openGLContextClosing();
+
+        associatedObjectNames.clear();
+        associatedObjects.clear();
+        cachedImageFrameBuffer.release();
+        nativeContext->shutdownOnRenderThread();
     }
 
     //==============================================================================
