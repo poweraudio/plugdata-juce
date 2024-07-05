@@ -140,6 +140,7 @@ public:
 
     ~CachedImage() override
     {
+        releaseResources();
     }
 
     //==============================================================================
@@ -177,9 +178,6 @@ public:
     {
         state |= StateFlags::pendingDestruction;
         
-        if ((state.fetch_and (~StateFlags::initialised) & StateFlags::initialised) == 0)
-                    return;
-
         ScopedContextActivator activator;
         activator.activate (context);
 
