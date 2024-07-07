@@ -48,6 +48,7 @@ public:
           output (out),
           monitor (mon)
     {
+        listeners.reserve(200); // vector reallocation can lead to bugs!
         listeners.push_back (listener);
         startThread (Priority::highest);
     }
@@ -113,7 +114,7 @@ public:
                    ? nullptr
                    : desc.Monitor;
     }
-
+    
 private:
     //==============================================================================
     void run() override
