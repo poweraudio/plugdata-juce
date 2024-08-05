@@ -80,7 +80,7 @@ Colour LookAndFeel::findColour (int colourID) const noexcept
     auto iter = colours.find(colourID);
     if (iter != colours.end())
     {
-        return colours.at(colourID);
+        return iter->second;
     }
 
     jassertfalse;
